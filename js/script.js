@@ -1,93 +1,44 @@
-// Mobile Menu Toggle
 const menuToggle = document.getElementById('menu-toggle');
 const mobileMenu = document.getElementById('mobile-menu');
+const brandLink = document.querySelector('nav a[href="#top"]');
 
-menuToggle.addEventListener('click', () => {
-    mobileMenu.classList.toggle('hidden');
-});
-
-// Close mobile menu when clicking on a link
-document.querySelectorAll('#mobile-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-        mobileMenu.classList.add('hidden');
-    });
-});
-
-// Smooth Scroll for Anchor Links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href === '#') return;
-
-        e.preventDefault();
-        const target = document.querySelector(href);
-        if (target) {
-            const offsetTop = target.offsetTop - 60;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-            });
-        }
-    });
-});
-
-// Section Intersection Observer - Fade In Animation
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.remove('opacity-0');
-            entry.target.style.animation = 'fadeIn 0.8s ease-in-out forwards';
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-// Observe all section content
-document.querySelectorAll('section').forEach(section => {
-    observer.observe(section);
-});
-
-// Email Copy Functionality
-const emailCopyBtn = document.getElementById('email-copy');
-if (emailCopyBtn) {
-    emailCopyBtn.addEventListener('click', () => {
-        const email = emailCopyBtn.getAttribute('data-email');
-
-        navigator.clipboard.writeText(email).then(() => {
-            const toast = document.getElementById('toast');
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-
-            const originalText = emailCopyBtn.textContent;
-            emailCopyBtn.textContent = '✓ 복사됨!';
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-                toast.classList.remove('opacity-100');
-                emailCopyBtn.textContent = originalText;
-            }, 2000);
-        }).catch(err => {
-            console.error('Failed to copy email:', err);
-        });
-    });
+function setMenuOpen(open) {
+    mobileMenu.classList.toggle('hidden', !open);
+    menuToggle.setAttribute('aria-expanded', String(open));
 }
 
-// Keyboard Navigation Support
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        if (!mobileMenu.classList.contains('hidden')) {
-            mobileMenu.classList.add('hidden');
-        }
+menuToggle.addEventListener('click', () => {
+    setMenuOpen(mobileMenu.classList.contains('hidden'));
+});
+
+brandLink.addEventListener('click', () => setMenuOpen(false));
+mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => setMenuOpen(false));
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+        setMenuOpen(false);
+        menuToggle.focus();
     }
 });
 
-// Prefers reduced motion
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (prefersReducedMotion) {
-    document.documentElement.style.scrollBehavior = 'auto';
-}
+const emailCopyButton = document.getElementById('email-copy');
+const toast = document.getElementById('toast');
+let toastTimer;
+
+emailCopyButton.addEventListener('click', async () => {
+    try {
+        await navigator.clipboard.writeText(emailCopyButton.dataset.email);
+        toast.textContent = '이메일 주소를 복사했습니다.';
+    } catch {
+        toast.textContent = '복사에 실패했습니다. 이메일 보내기 링크를 이용해 주세요.';
+    }
+
+    clearTimeout(toastTimer);
+    toast.classList.replace('opacity-0', 'opacity-100');
+    toastTimer = setTimeout(() => {
+        toast.classList.replace('opacity-100', 'opacity-0');
+        toast.textContent = '';
+    }, 2500);
+});

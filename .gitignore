@@ -25,5 +25,17 @@ build/
 Thumbs.db
 .DS_Store
 
-## Claude Settings
-.claude/settings.local.json
+# 개인 경력 문서와 포트폴리오 검토용 초안
+/docs/
+/growth-portfolio-draft.md
+/문제.txt
+
+# 브라우저 검증 기록과 스크린샷
+/.playwright-mcp/
+
+# 로컬 AI 도구와 개발 설정
+/.claude/
+/.agents/
+/.codex/
+/.aws/
+/setting.json
